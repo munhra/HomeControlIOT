@@ -1,0 +1,14 @@
+{
+  "name": "homecontrol",
+  "version": "1.0.0",
+  "description": "Home Control Mock",
+  "main": "homeIOT.js",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
