@@ -5,10 +5,20 @@
 
 var express = require('express');
 var bodyParser = require('body-parser')
+var Gpio = require("onoff").Gpio;
+var led = new Gpio(18,"out");
+var pythonShell = require('python-shell');
+var date = require('date-and-time');
+
+var options = {
+
+	mode:'text',
+	pythonPath:'python',
+	pythonOptions:['-u'],
+};
+
 var app = express();
-
 var lampON = false;
-
 var Temperature = function (value, time, date) {
     this.value = value;
     this.time = time;
@@ -19,10 +29,12 @@ app.use(bodyParser.json());
 
 app.get('/switchlamp', function (req, res){
 
-	if (lampON) {
-		res.send(200);
+	if (led.readSync() === 1) {
+		console.log("Lamp is on !")
+		res.sendStatus(200);
 	} else {
-		res.send(201);
+		console.log("Lamp is off !")
+		res.sendStatus(201);
 	}	
 
 });
@@ -33,25 +45,35 @@ app.post('/switchlamp',function (req, res) {
 	lampON = req.body.lampstate;
 
 	if (lampON) {
-		res.send(200);
+		led.writeSync(1);
+		res.sendStatus(200);	
 	} else {
-		res.send(201);
+		led.writeSync(0);
+		res.sendStatus(201);
 	}	
 	
 });
 
 app.get('/temperature', function (req, res) {
   
-  var tempvalue = Math.random() * (37.5 - 25.8) + 25.8;
+  pythonShell.run('readTemp.py', options, function(err, results) {
 
-  var temperature = new Temperature(tempvalue,"11:30:90","21/10/2014"); 
-  console.log("Send temperature");
-  res.send(JSON.stringify(temperature));
+	console.log('results %j',results);
+	var now = new Date();
+	var hour = date.format(now,'HH:mm:ss');	
+	var day = date.format(now,'DD/MM/YYYY');
+
+        console.log('hour %j',hour);
+        console.log('day %j', day);
+
+        var temperature = new Temperature(results[0],hour,day);   
+        res.send(JSON.stringify(temperature));
+  });
 });
 
 var server = app.listen(3000, function () {
   var host = server.address().address;
   var port = server.address().port;
 
-  console.log('Example app listening at http://%s:%s', host, port);
+  console.log('HOME IOT ---> listening at http://%s:%s', host, port);
 });
