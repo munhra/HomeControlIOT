@@ -65,8 +65,11 @@ app.get('/temperature', function (req, res) {
 
         console.log('hour %j',hour);
         console.log('day %j', day);
+	console.log('temp %j',results[0]);
 
-        var temperature = new Temperature(results[0],hour,day);   
+	var tempValue = parseFloat(results[0]);
+
+        var temperature = new Temperature(tempValue,hour,day);   
         res.send(JSON.stringify(temperature));
   });
 });
